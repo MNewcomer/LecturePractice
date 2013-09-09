@@ -1,0 +1,2 @@
+echo $NAME
+/proc/meminfo
