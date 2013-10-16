@@ -127,7 +127,7 @@ options(error = NULL) # reset things
 
 # insert "browser()" manually at some point in calcVar()
 trace(calcVar, edit = 'emacs')
-# or fix(calcVar, editor = 'emacs')
+fix(calcVar, editor = 'emacs')
 
 calcVar
 gamma.jackknife.2(cats$Hwt)

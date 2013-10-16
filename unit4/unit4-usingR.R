@@ -410,14 +410,12 @@ pplot <- function(x, y, pch = 16, cex = 0.4, ...) {
 	plot(x, y, pch = pch, cex = cex, ...)
 }
 
-myFun <- function(...){
-print(..2) 
-args <- list(...)
-print(args[[2]])
+myFun <- function(...) {
+  print(..2)
+  args <- list(...)
+  print(args[[2]])
 }
-myFun(1,3,5,7)
-
-
+myFun(1, 3, 5, 7)
 args(dgamma)
 
 
@@ -451,16 +449,16 @@ match.call(mean, quote(mean(y, na.rm = TRUE)))
 
 
 
-## f <- function(){
-## 	oldpar <- par()
-## 	par(cex = 2)
-## 	# body of code
-## 	par() <- oldpar
-## }
+f <- function(){
+	oldpar <- par()
+	par(cex = 2)
+	# body of code
+	par() <- oldpar
+}
 
 ### 5.2 Outputs
 
-f <- function(x) { res <- x^2}
+f <- function(x) {res <- x^2}
 f(3)
 a <- f(3)
 a
@@ -482,7 +480,7 @@ is.list(mod)
 
 x <- 3
 f <- function() {x <- x^2; print(x)}
-f(x)
+f()
 x # what do you expect?
 f <- function() {assign('x', x^2, env = .GlobalEnv)}
 # careful, this could be dangerous as a variable is changed as a side effect
@@ -520,6 +518,27 @@ f <- function(){
 h <- f()
 h(3)
 
+# expanding on the example in response to a Piazza question
+
+y <- 100
+f <- function(){
+	y <- 10
+        print(sys.frame(sys.nframe()))
+	g <- function(x) x + y
+	return(g)
+}
+# you can think of f() as a function constructor
+h <- f()
+h
+h(3)
+
+assign("y", 5, envir = environment(h))
+h(3)
+
+environment(h)$y <- 1
+h(3)
+
+
 
 
 z <- 3
@@ -544,7 +563,7 @@ while (environmentName(x) != environmentName(emptyenv())) {
 
 
 ls(pos = 7)[1:5] # what does this do?
-ls("package:stats")[1:5]
+ls("package:datasets")[1:5]
 environment(lm)
 
 

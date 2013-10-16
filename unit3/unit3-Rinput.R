@@ -11,9 +11,11 @@
  setwd('D:/Users/Michelle Newcomer/Documents/GitHub/LecturePractice/unit3')
  dat <- read.table('RTADataSub.csv', sep = ',', head = FALSE)
  lapply(dat, class)
-sapply(dat2, class)
+
  levels(dat[ ,2])
  dat2 <- read.table('RTADataSub.csv', sep = ',', head = FALSE,na.strings = c("NA", "x"),stringsAsFactors = FALSE)
+levels(dat2[ ,2])
+sapply(dat2, class)
  unique(dat2[ ,2])
  # hmmm, what happened to the blank values this time?
  which(dat[ ,2] == "")
@@ -22,32 +24,32 @@ sapply(dat2, class)
  # let's make sure the coercion worked - sometimes R is obstinant
  lapply(sequ, class)
  # that made use of the fact that a data frame is a list
-sapplu(sequ,class)
+sapply(sequ,class)
 
 
-dat <- readLines('precip.txt')
-id <- as.factor(substring(dat, 4, 11) )
-year <- substring(dat, 17, 20)
+dat3 <- readLines('precip.txt')
+id <- as.factor(substring(dat3, 4, 11) )
+year <- substring(dat3, 17, 20)
 year[1:5]
 class(year)
-year <- as.integer(substring(dat, 18, 21))
-month <- as.integer(substring(dat, 22, 23))
-nvalues <- as.integer(substring(dat, 28, 30))
+year <- as.integer(substring(dat3, 18, 21))
+month <- as.integer(substring(dat3, 22, 23))
+nvalues <- as.integer(substring(dat3, 28, 30))
 
 
 
- dat <- readLines(pipe("ls -al"))
- dat <- read.table(pipe("unzip dat.zip"))
- dat <- read.csv(gzfile("dat.csv.gz"))
- dat <- readLines("http://www.stat.berkeley.edu/~paciorek/index.html")
+ dat4 <- readLines(pipe("ls -al"))
+ dat4 <- read.table(pipe("unzip dat.zip"))
+ dat4 <- read.csv(gzfile("dat.csv.gz"))
+ dat4 <- readLines("http://www.stat.berkeley.edu/~paciorek/index.html")
 
 
 
- con <- file("../data/precip.txt", "r") # "r" for 'read' - you can also open files for writing with "w" (or "a" for appending)
+ con <- file("precip.txt", "r") # "r" for 'read' - you can also open files for writing with "w" (or "a" for appending)
  class(con)
  blockSize <- 1000 # obviously this would be large in any real application
  nLines <- 300000
- for(i in 1:ceiling(nLines / blockSize)){
+ for(i in 1:ceiling(nLines/blockSize)){
  	lines <- readLines(con, n = blockSize)
  	# manipulate the lines and store the key stuff
  }
@@ -55,7 +57,7 @@ nvalues <- as.integer(substring(dat, 28, 30))
 
 
 
-dat <- readLines('../data/precip.txt')
+dat <- readLines('precip.txt')
 con <- textConnection(dat[1], "r")
 read.fwf(con, c(3,8,4,2,4,2))
 
@@ -65,7 +67,7 @@ read.fwf(con, c(3,8,4,2,4,2))
 #####################################################
 
 temps <- c(12.5, 37.234324, 1342434324.79997234, 2.3456e-6, 1e10)
-sprintf("%9.4f C", temps)
+sprintf("%9.2f C", temps)
 print(temps,digits=4)
 
 
@@ -122,7 +124,7 @@ x
 
 
 
-load('../data/IPs.RData') # loads in an object named 'text'
+load('IPs.RData') # loads in an object named 'text'
 tmp <- substring(text, 1, 15)
 # the issue occurs with the 6402th element (found by trial and error):
 tmp <- substring(text[1:6401],1,15)
