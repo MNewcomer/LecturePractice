@@ -270,6 +270,7 @@ myFun2(3)
 x <- rnorm(1e7)
 myFun2 <- with(list(data = x), function(param) return(param * data))
 object.size(myFun2)
+object.size(environment(myFun2)$data)
 
 
 ### 2.3 Operators
@@ -445,6 +446,29 @@ y <- x[1:(length(x) - 1)]
 gc()
 
 ### 3.4 Passing objects to compiled code
+n=10
+xvar <- sample(c(seq(1, 20, by = 1), NA), n, replace = TRUE)
+yvar <- sample(c(seq(1, 20, by = 1), NA), n, replace = TRUE)
+nalineX <- is.na(xvar)
+nalineY <- is.na(yvar)
+xvar[nalineX | nalineY] <- 0
+yvar[nalineX | nalineY] <- 0
+useline <- !(nalineX | nalineY)
+# Table must be initialized for -1's
+tablex <- numeric(max(xvar) + 1)
+tabley <- numeric(max(xvar) + 1)
+
+res <- .C("fastcount", PACKAGE="GCcorrect", tablex = as.integer(tablex), tabley = as.integer(tabley), as.integer(xvar), as.integer(yvar), as.integer(useline), as.integer(length(xvar)))
+
+res <- function(){
+  tablex = as.integer(tablex), tabley = as.integer(tabley), as.integer(xvar), as.integer(yvar), as.integer(useline), as.integer(length(xvar))
+}
+
+res <- function(x) {
+  tablex = as.integer(tablex)
+  tabley = as.integer(tabley)
+}
+
 
 f <- function(x){
 	print(.Internal(inspect(x)))
@@ -465,8 +489,7 @@ src <- '
 		x[i] = exp(x[i]);
 	}
 '
-sillyExp <- cfunction(signature(n = "integer", x = "numeric"),
-	src, convention = ".C")
+sillyExp <- cfunction(signature(n = "integer", x = "numeric"), src, convention = ".C")
 len <- as.integer(100)  # or 100L
 vals <- rnorm(len)
 vals[1]
@@ -596,6 +619,14 @@ myfun(x)
 #################################################
 
 ### 4.1 S3 approach
+class(ToothGrowth)
+summary(ToothGrowth)
+summary.data.frame(ToothGrowth)
+fit <- lm(len ~ dose + factor(supp), data=ToothGrowth)
+class(fit)
+summary(fit)
+summary.lm(fit)
+
 
 library(methods)
 yb <- sample(c(0, 1), 10, replace = TRUE)
@@ -814,7 +845,7 @@ tsSimClass$methods(list(
 # example usage
 master <- tsSimClass$new(1:100, 10)
 master
-tsSimClass$help('calcMats')
+tsSimClass$help('simulate')
 devs <- master$simulate()
 plot(master$times, devs, type = 'l')
 mycopy <- master

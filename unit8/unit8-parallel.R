@@ -1,6 +1,6 @@
 ############################################################
 ### Demo code for Unit 8 of Stat243, "Parallel processing"
-### Chris Paciorek, October 2012
+### Chris Paciorek, October 2013
 ############################################################
 
 #################################
@@ -12,7 +12,7 @@
 X <- matrix(rnorm(8000^2), 8000)
 system.time({
 X <- crossprod(X) # X^t X produces pos.def. matrix
-U <- chol(x)})  # U^t U = X 
+U <- chol(X)})  # U^t U = X 
 # exit R, execute: "export OMP_NUM_THREADS=1", and restart R
 system.time({
 X <- crossprod(X)
@@ -29,6 +29,7 @@ require(parallel) # one of the core R packages
 require(doParallel)
 # require(multicore); require(doMC) # alternative to parallel/doParallel
 # require(Rmpi); require(doMPI) # when Rmpi is available as the back-end
+require(foreach)
 library(foreach)
 library(iterators)
 
@@ -56,7 +57,7 @@ nCores <- 4
 #
 # ?clusterApply
 cl <- makeCluster(nCores) # by default this uses sockets
-nSims <- 60
+nSims <- 600
 testFun <- function(i){
 	mn <- mean(rnorm(1000000))
 	return(mn)
@@ -70,8 +71,9 @@ system.time(
 	res2 <- sapply(1:nSims, testFun)
 )
 myList <- as.list(1:nSims)
-res <- parLapply(cl, myList, testFun)
-
+system.time(
+  res3 <- parLapply(cl, myList, testFun)
+)
 ### using forking
 system.time(
 	res <- mclapply(seq_len(nSims), testFun, mc.cores = nCores) 
