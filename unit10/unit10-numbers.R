@@ -52,6 +52,9 @@ a - b
 
 ### 2.2 Overflow and underflow
 
+.Machine$double.max.exp
+.Machine$double.min.exp
+
 log10(2^1024) # whoops ... we've actually just barely overflowed
 log10(2^1023)
 
@@ -174,7 +177,7 @@ sum((x - mean(x))^2)
 
 # part of the predictive density calculation example:
 exp(-1000)
-
+require(fields)
 xs <- 1:100
 dists <- rdist(xs)
 corMat <- exp(- (dists/10)^2) # this is a p.d. matrix (mathematically)

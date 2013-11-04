@@ -60,7 +60,7 @@ head(info)
 
 ## @knitr chunk4
 # that db is read-only; to create a view we need to be able to modify it
-system(paste0('cp ', fileName, ' /tmp/.'))
+system(paste0('cp', fileName,'/tmp/.'))
 dbDisconnect(db)
 db <- dbConnect(drv, dbname = '/tmp/cis.db') 
 

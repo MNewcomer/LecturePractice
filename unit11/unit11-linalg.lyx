@@ -1084,12 +1084,13 @@ Any set of linearly independent vectors (say
 \begin_inset Formula $x$
 \end_inset
 
- that is in the space with respect to (as a linear combination of) normalized
- basis vectors using the inner product: 
+ that is in the space with respect to (as a linear combination of) basis
+ vectors as 
 \begin_inset Formula $x=\sum_{i}c_{i}v_{i}$
 \end_inset
 
- where we can find the weights as 
+, where if the basis vectors are normalized and orthogonal, we can find
+ the weights as 
 \begin_inset Formula $c_{k}=\langle x,v_{k}\rangle$
 \end_inset
 
@@ -1184,7 +1185,7 @@ Consider a regression context.
  we have multiple possible solutions and the system is ill-determined (under-det
 ermined).
  Of course we usually have 
-\begin_inset Formula $n>p$
+\begin_inset Formula $n>q$
 \end_inset
 
 , so the system is overdetermined - there is no exact solution, but regression
@@ -1719,7 +1720,11 @@ This means we have no information about the overall level of
 \end_inset
 
 ).
- I could parameterize a statistical model as 
+ 
+\end_layout
+
+\begin_layout Standard
+I could parameterize a statistical model as 
 \begin_inset Formula $\mu+y$
 \end_inset
 
@@ -2401,6 +2406,16 @@ The basic story is that simple strategies often solve the problem, and that
  in your calculations.
 \end_layout
 
+\begin_layout Standard
+One rule of thumb is to try to work with numbers whose magnitude is around
+ 1.
+ We can often scale the values in our problem in order to do this.
+ I.e., change the units of your variables.
+ Instead of personal income in dollars, use personal income in thousands
+ or hundreds of thousands of dollars.
+ 
+\end_layout
+
 \begin_layout Section
 Matrix factorizations (decompositions) and solving systems of linear equations
 \end_layout
@@ -2594,6 +2609,8 @@ forwardsolve(L, b, transpose = TRUE)
 \end_layout
 
 \begin_layout Standard
+
+\series bold
 To reiterate the distinction between matrix inversion and solving a system
  of equations, when we write 
 \begin_inset Formula $U^{-1}b$
@@ -2714,6 +2731,15 @@ th column).
 \end_layout
 
 \begin_layout Standard
+In class, we'll work out the computational complexity of the LU and see
+ that it is 
+\begin_inset Formula $O(n^{3})$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
 If we look at 
 \emph on
 solve.default()
@@ -2729,9 +2755,18 @@ dgesv
 \end_layout
 
 \begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
 For a problem set problem, you'll compute the computational order of the
  LU decomposition and compare it to explicitly finding the inverse and multiplyi
 ng the inverse by one or more vectors.
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -3095,11 +3130,27 @@ tion are very stable.
 \end_layout
 
 \begin_layout Chunk
+<<chunk8a, include=FALSE>>=
+\end_layout
+
+\begin_layout Chunk
+require(fields)
+\end_layout
+
+\begin_layout Chunk
+@
+\end_layout
+
+\begin_layout Chunk
+
+\end_layout
+
+\begin_layout Chunk
 <<chunk8>>=
 \end_layout
 
 \begin_layout Chunk
-library(fields)
+# require(fields)
 \end_layout
 
 \begin_layout Chunk
@@ -5091,6 +5142,10 @@ The SVD can also be generated from a QR decomposition: QUSigmaV where I
  do an SVD on the R matrix.
  Note this is helpful for SVDs of tall skinny matrices.
  Can do if HDFS/mapreduce do A_i^TA_i for row blocks of input matrix.
+\end_layout
+
+\begin_layout Plain Layout
+[do show this and go over the map and reduce steps]
 \end_layout
 
 \end_inset
