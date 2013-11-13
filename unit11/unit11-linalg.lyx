@@ -2975,7 +2975,7 @@ We can then solve a system of equations as:
 \begin_inset Formula $U^{-1}(U^{\top-1}b)$
 \end_inset
 
-, which in R is done as follows:
+, which in R can be done in either of the following ways:
 \end_layout
 
 \begin_layout Chunk
@@ -3117,7 +3117,8 @@ Numerical issues with eigendecompositions and Cholesky decompositions for
 \begin_layout Standard
 Monahan comments that in general Gaussian elimination and the Cholesky decomposi
 tion are very stable.
- However if the matrix is very ill-conditioned we can get 
+ However, in the Cholesky case, if the matrix is very ill-conditioned we
+ can get 
 \begin_inset Formula $A_{ii}-\sum_{k}U_{ki}^{2}$
 \end_inset
 
@@ -3127,6 +3128,7 @@ tion are very stable.
  it exists mathematically.
  It's not all that hard to produce such a matrix, particularly when working
  with high-dimensional covariance matrices with large correlations.
+ 
 \end_layout
 
 \begin_layout Chunk
@@ -3330,7 +3332,15 @@ A strategy when working with mathematically but not numerically positive
 \end_inset
 
  that are numerically linearly dependent.
- 
+ See the 
+\emph on
+pivot
+\emph default
+ argument to R's 
+\emph on
+chol()
+\emph default
+.
 \end_layout
 
 \begin_layout Subsection
@@ -3628,7 +3638,7 @@ Why use the QR instead of the Cholesky on
 \end_inset
 
 ? The condition number of 
-\begin_inset Formula $A$
+\begin_inset Formula $X$
 \end_inset
 
  is the square root of that of 
@@ -3730,7 +3740,11 @@ qr()
 \begin_inset Formula $X$
 \end_inset
 
-.
+ (the space orthogonal to the column space of 
+\begin_inset Formula $X$
+\end_inset
+
+).
  The analogy in regression is that we get the basis vectors for the regression,
  while adding the remaining columns gives us the full 
 \begin_inset Formula $n$
@@ -4094,7 +4108,7 @@ In the regression context, as we work through the individual transformations,
 
 .
  To find 
-\begin_inset Formula $\mbox{Cov}(\hat{\beta})=(X^{\top}X)^{-1}=(R^{\top}R)^{-1}=R^{-1}R^{-\top}$
+\begin_inset Formula $\mbox{Cov}(\hat{\beta})\propto(X^{\top}X)^{-1}=(R^{\top}R)^{-1}=R^{-1}R^{-\top}$
 \end_inset
 
  we do need to invert 
@@ -4184,7 +4198,7 @@ We can use a series of Givens rotations to do the QR but unless it is done
  
 \begin_inset Formula 
 \begin{eqnarray*}
-R & = & Q_{pn}\cdots Q_{22}Q_{1n}\cdots Q_{13}Q_{12}X\\
+R & = & Q_{pn}\cdots Q_{23}Q_{1n}\cdots Q_{13}Q_{12}X\\
 Q & = & (Q_{pn}\cdots Q_{12})^{\top}
 \end{eqnarray*}
 
@@ -4382,7 +4396,7 @@ Another way to think about this is that
 \begin_inset Formula $Q,$
 \end_inset
 
- 
+ since 
 \begin_inset Formula $(Q^{\top}Q)^{-1}Q^{\top}X=Q^{\top}X$
 \end_inset
 
@@ -4408,6 +4422,178 @@ Another way to think about this is that
 \end_inset
 
  being upper triangular makes sense.
+\end_layout
+
+\begin_layout Subsubsection
+The 
+\begin_inset Quotes eld
+\end_inset
+
+tall-skinny
+\begin_inset Quotes erd
+\end_inset
+
+ QR
+\end_layout
+
+\begin_layout Standard
+Suppose you have a very large regression problem, with 
+\begin_inset Formula $n$
+\end_inset
+
+ very large, and 
+\begin_inset Formula $n\gg p$
+\end_inset
+
+.
+ There is a variant of the QR, called the tall-skinny QR (see 
+\begin_inset CommandInset href
+LatexCommand href
+target "http://arxiv.org/pdf/0808.2664v1.pdf"
+
+\end_inset
+
+ for details) that allows us to find the decomposition in a parallel fashion.
+ The basic idea is to do a nested set of QR decompositions on blocks of
+ rows of 
+\begin_inset Formula $X$
+\end_inset
+
+:
+\begin_inset Formula 
+\begin{eqnarray*}
+X & = & \left(\begin{array}{c}
+X_{0}\\
+X_{1}\\
+X_{2}\\
+X_{3}
+\end{array}\right)=\left(\begin{array}{c}
+Q_{0}R_{0}\\
+Q_{1}R_{1}\\
+Q_{2}R_{2}\\
+Q_{3}R_{3}
+\end{array}\right),
+\end{eqnarray*}
+
+\end_inset
+
+followed by 'reduction' steps (this can be done in a map-reduce context)
+ that do the 
+\begin_inset Formula $QR$
+\end_inset
+
+ of pairs of the 
+\begin_inset Formula $R$
+\end_inset
+
+ factors:
+\begin_inset Formula 
+\[
+\left(\begin{array}{c}
+R_{0}\\
+R_{1}\\
+R_{2}\\
+R_{3}
+\end{array}\right)=\left(\begin{array}{c}
+\left(\begin{array}{c}
+R_{0}\\
+R_{1}
+\end{array}\right)\\
+\left(\begin{array}{c}
+R_{2}\\
+R_{3}
+\end{array}\right)
+\end{array}\right)=\left(\begin{array}{c}
+Q_{01}R_{01}\\
+Q_{23}R_{23}
+\end{array}\right)
+\]
+
+\end_inset
+
+and 
+\begin_inset Formula 
+\[
+\left(\begin{array}{c}
+R_{01}\\
+R_{23}
+\end{array}\right)=Q_{0123}R_{0123}.
+\]
+
+\end_inset
+
+The full decomposition is then 
+\begin_inset Formula 
+\[
+X=\left(\begin{array}{cccc}
+Q_{0} & 0 & 0 & 0\\
+0 & Q_{1} & 0 & 0\\
+0 & 0 & Q_{2} & 0\\
+0 & 0 & 0 & Q_{3}
+\end{array}\right)\left(\begin{array}{cc}
+Q_{01} & 0\\
+0 & Q_{23}
+\end{array}\right)Q_{0123}R_{0123}=QR.
+\]
+
+\end_inset
+
+The computation can be done in parallel (in particular it can be done with
+ map-reduce) and the 
+\begin_inset Formula $Q$
+\end_inset
+
+ matrix for big problems would generally not be computed explicitly but
+ would be stored in its constituent pieces.
+\end_layout
+
+\begin_layout Standard
+Alternatively, there is a variant on the algorithm that processes the row-blocks
+ of 
+\begin_inset Formula $X$
+\end_inset
+
+ serially, allowing you to do QR on a large tall-skinny matrix that you
+ can't fit in memory (or possibly even on disk).
+ First you do 
+\begin_inset Formula $QR$
+\end_inset
+
+ on 
+\begin_inset Formula $X_{0}$
+\end_inset
+
+ to get 
+\begin_inset Formula $Q_{0}R_{0}$
+\end_inset
+
+.
+ Then you stack 
+\begin_inset Formula $R_{0}$
+\end_inset
+
+ on top of 
+\begin_inset Formula $X_{1}$
+\end_inset
+
+ and do QR to get 
+\begin_inset Formula $R_{01}$
+\end_inset
+
+.
+ Then stack 
+\begin_inset Formula $R_{01}$
+\end_inset
+
+ on top of 
+\begin_inset Formula $X_{2}$
+\end_inset
+
+ to get 
+\begin_inset Formula $R_{012}$
+\end_inset
+
+, etc.
 \end_layout
 
 \begin_layout Subsection
@@ -4458,10 +4644,6 @@ myqr = qr(A)
 
 \begin_layout Chunk
 magn = sum(log(abs(diag(myqr$qr)))) 
-\end_layout
-
-\begin_layout Chunk
-sign = prod(sign(diag(myqr$qr)))
 \end_layout
 
 \begin_layout Chunk
@@ -4526,7 +4708,11 @@ determinant()
 \emph on
 det()
 \emph default
- just wraps determinant, but I can't seem to pass the 
+ just wraps 
+\emph on
+determinant()
+\emph default
+, but I can't seem to pass the 
 \emph on
 logarithm
 \emph default
@@ -4828,11 +5014,11 @@ Let's consider an
 \begin_inset Formula $n$
 \end_inset
 
- words and 
+ documents and 
 \begin_inset Formula $m$
 \end_inset
 
- documents, or 
+ words, or 
 \begin_inset Formula $n$
 \end_inset
 
@@ -5052,20 +5238,22 @@ Computation
 \end_layout
 
 \begin_layout Standard
-The basic algorithm is similar to the QR method for the eigendecomposition.
+The basic algorithm (Golub-Reinsch) is similar to the QR method for the
+ eigendecomposition.
  We use a series of Householder transformations on the left and right to
  reduce 
 \begin_inset Formula $A$
 \end_inset
 
- to a bidiagonal matrix, 
+ to an upper bidiagonal matrix, 
 \begin_inset Formula $A^{(0)}$
 \end_inset
 
 .
- The post-multiplications generate the zeros in the upper triangle.
- (A bidiagonal matrix is one with non-zeroes only on the diagonal and first
- subdiagonal above the diagonal).
+ The post-multiplications (the transformations on the right) generate the
+ zeros in the upper triangle.
+ (An upper bidiagonal matrix is one with non-zeroes only on the diagonal
+ and first subdiagonal above the diagonal).
  Then the algorithm produces a series of upper bidiagonal matrices, 
 \begin_inset Formula $A^{(0)}$
 \end_inset
@@ -5089,6 +5277,11 @@ A^{(j+1)} & = & R_{m-2}^{\top}R_{m-3}^{\top}\cdots R_{0}^{\top}A^{(j)}T_{0}T_{1}
 
 \end_inset
 
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
 Note that the multiplication on the right is required to produce zeroes
  in the 
 \begin_inset Formula $k$
@@ -5099,6 +5292,11 @@ th column and the
 \end_inset
 
 th row.
+ [NOT SURE WHAT I MEANT BY THIS]
+\end_layout
+
+\end_inset
+
  This eventually gives 
 \begin_inset Formula $A^{(...)}=D$
 \end_inset
@@ -5133,24 +5331,50 @@ th row.
  
 \end_layout
 
+\begin_layout Paragraph
+Computation for large tall-skinny matrices
+\end_layout
+
 \begin_layout Standard
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-The SVD can also be generated from a QR decomposition: QUSigmaV where I
- do an SVD on the R matrix.
- Note this is helpful for SVDs of tall skinny matrices.
- Can do if HDFS/mapreduce do A_i^TA_i for row blocks of input matrix.
-\end_layout
-
-\begin_layout Plain Layout
-[do show this and go over the map and reduce steps]
-\end_layout
-
+The SVD can also be generated from a QR decomposition.
+ Take 
+\begin_inset Formula $X=QR$
 \end_inset
 
+ and then do an SVD on the 
+\begin_inset Formula $R$
+\end_inset
 
+ matrix to get 
+\begin_inset Formula $R=QUDV^{T}=U^{*}DV$
+\end_inset
+
+.
+ This is particularly helpful for the case when 
+\begin_inset Formula $X$
+\end_inset
+
+ is tall and skinny (suppose 
+\begin_inset Formula $X$
+\end_inset
+
+ is 
+\begin_inset Formula $n\times p$
+\end_inset
+
+ with 
+\begin_inset Formula $n\gg p$
+\end_inset
+
+), because we can do the tall-skinny QR, and the resulting SVD on 
+\begin_inset Formula $R$
+\end_inset
+
+ is easy computationally if 
+\begin_inset Formula $p$
+\end_inset
+
+ is manageable.
 \end_layout
 
 \begin_layout Section
