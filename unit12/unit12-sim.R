@@ -107,6 +107,46 @@ res2 <- mclapply(seq_len(nSims), testFun,
 	mc.cores = nSlots, mc.set.seed = TRUE) 
 identical(res,res2)
 
+# with foreach
+
+nslaves <- 4
+library(doMPI, quietly = TRUE)
+cl <- startMPIcluster(nslaves)
+registerDoMPI(cl) 
+result <- foreach(i = 1:20, .options.mpi = list(seed = 0)) %dopar% { 
+	out <- mean(rnorm(1000)) 
+}
+result2 <- foreach(i = 1:20, .options.mpi = list(seed = 0)) %dopar% { 
+	out <- mean(rnorm(1000)) 
+}
+identical(result, result2)
+
+rm(result, result2)
+nCores <- 4
+library(doRNG, quietly = TRUE)
+library(doParallel)
+registerDoParallel(nCores) 
+result <- foreach(i = 1:20, .options.RNG = 0) %dorng% { 
+	out <- mean(rnorm(1000)) 
+}
+result2 <- foreach(i = 1:20, .options.RNG = 0) %dorng% { 
+	out <- mean(rnorm(1000)) 
+}
+identical(result, result2)
+
+rm(result, result2)
+library(doRNG, quietly = TRUE)
+library(doParallel)
+registerDoParallel(nCores)
+registerDoRNG(seed = 0) 
+result <- foreach(i = 1:20) %dopar% { 
+	out <- mean(rnorm(1000)) 
+}
+registerDoRNG(seed = 0) 
+result2 <- foreach(i = 1:20) %dopar% { 
+	out <- mean(rnorm(1000)) 
+}
+identical(result,result2)
 
 ###################################
 # 3: Generating random variables
@@ -161,7 +201,7 @@ lines(yvals, dnorm(yvals)/(1-pnorm(tauStd)), col = 'red')
 ### 3.5 Importance sampling
 
 
-# suppose we want to estimate P(X^2 < -3) for a Cauchy
+# suppose we want to estimate P(X < -3) for a Cauchy (this is of interest in the case where we don't have the CDF in closed form)
 # instead of drawing from a standard Cauchy, let's draw from a Cauchy shifted to be centered at -5
 
 # write out the code below for a single estimate
@@ -178,7 +218,7 @@ g <- dt(x + 5, df = 1)  # density of x under g (density of x under a Cauchy cent
 w <- f/g  # weights
 
 stdEst <- mean(y < (-3))
-isEst <- mean((x < (-3))*w)
+isEst <- mean((x < (-3))*w) # i.e. (1/m)*sum((x < (-3))*w)
 
 # now let's do a small simulation study of the estimator
 
@@ -227,6 +267,7 @@ abline(0,1)
 # 5: Implementation of simulation studies
 ##############################################
 
+require(fields)
 thetaLevels <- c("low", "med", "hi")
 n <- c(10, 100, 1000)
 tVsNorm <- c("t", "norm")
