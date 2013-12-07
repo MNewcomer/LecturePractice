@@ -117,7 +117,7 @@ lines(Days, fitted(wtloss.lm), col = "grey")
 # we need some starting values
 # guess that beta2 approx 100 since the midpoint of Days is near 100
 
-beta2.init = 100
+beta2.init = 1000
 plot(2^(-Days/beta2.init), Weight)
 tmpMod = lm(Weight ~ I(2^(-Days/beta2.init)))
 beta0.init = tmpMod$coef[1]
@@ -344,6 +344,8 @@ plotseg(1, 2)
 
 xbar = (xs[1,]+xs[2,])/2
 
+text(xs[3,1], xs[3,2], expression(x[p+1]))
+
 points(xbar[1],xbar[2], col = 'red')
 
 ### reflection
@@ -402,10 +404,17 @@ plotseg(2, 3, 'purple')
 x= seq(0,10,len=100)
 f=function(x)  sin(x)
 
-plot(x, f(x), type='l', ylim = c(-1, 3))
+plot(x, f(x), type='l', ylim = c(-1, 3), col = 'grey')
 tau = 10
 # plot the modified function
-lines(x, exp(-f(x)/tau))   # try tau = 3, 1, .3, etc.
+lines(x, exp(-f(x)/tau), col = 'red')   # try tau = 3, 1, .3, etc.
+# effect of cooling...
+tau =3
+# plot the modified function
+lines(x, exp(-f(x)/tau), col='yellow')   # try tau = 3, 1, .3, etc.
+tau =1
+# plot the modified function
+lines(x, exp(-f(x)/tau), col = 'blue')   # try tau = 3, 1, .3, etc.
 
 ##############################
 # 6: Optimization in R
@@ -415,7 +424,7 @@ lines(x, exp(-f(x)/tau))   # try tau = 3, 1, .3, etc.
 
 # using optim()
 
-yHundredths = scan('precipData.txt')  # precip in hundredths of inches
+yHundredths = scan('../data/precipData.txt')  # precip in hundredths of inches
 yHundredths = yHundredths[!is.na(yHundredths)]
 y = yHundredths/100  # precip now in inches
 
@@ -521,4 +530,83 @@ for( i in 1:length(shapeVals)){
 # note there a couple weird things about this log likelihood - (1) weird things happen when the shape parameter is very close to 0 and (2) for certain combinations the likelihood is not defined (it's set to 1e6) - this is why some of the colors go from aqua to white without showing red values - reparameterizing or optimizing with explicit constraints may be better approaches
 
 # apart from that, it appears that optim() has probably found the minimum
+
+##############################
+# 9: Convex optimization
+##############################
+
+### 9.6 Interior point methods
+
+# based on the example in ?constrOptim
+fr <- function(x) {   ## Rosenbrock Banana function
+  x1 <- x[1]
+  x2 <- x[2]
+  100 * (x2 - x1 * x1)^2 + (1 - x1)^2
+}
+grr <- function(x) { ## Gradient of 'fr'
+  x1 <- x[1]
+  x2 <- x[2]
+  c(-400 * x1 * (x2 - x1 * x1) - 2 * (1 - x1),
+    200 *      (x2 - x1 * x1))
+}
+
+m <- 100
+x1s <- x2s <- seq(-5, 5, len = m)
+xs <- expand.grid(x1s, x2s)
+
+f <- apply(xs, 1, fr)
+
+image.plot(x1s, x2s, matrix(log(f), m))
+
+ui = rbind(c(-1,0), c(1,-1))
+ci = c(-0.9, -0.1)
+# x1 <= 0.9
+# x2 <= x1 + 0.1
+# this is Region "I" in the figure
+
+abline(v = 0.9)
+abline(.1, 1)
+
+out <- constrOptim(c(.5,0), fr, grr, ui = ui, ci = ci)
+out$par
+points(out$par[1], out$par[2])
+text(-1,-2, "I", cex = 2)
+
+# what about constraining to a different region? ("Region II")
+
+ui = rbind(c(-1,0), c(-1, 1))
+ci = c(-0.9,0.1)
+# x1 <= 0.9
+# x2 >= x1 + 0.1
+
+out <- constrOptim(c(.5,0), fr, grr, ui = ui, ci = ci)
+# whoops, not feasible!
+out <- constrOptim(c(-3, 2), fr, grr, ui = ui, ci = ci)
+points(out$par[1], out$par[2], pch = 2)
+text(-3,0, "II", cex = 2)
+
+# how about optimizing along a line (equality constraint)?
+# x1 - x2 = 0.1 is the same as
+# x1 - x2 <= 0.1
+# x1 - x2 >= 0.1
+ui = rbind(c(-1, 1), c(1, -1))
+ci = c(-0.1, 0.1)
+
+out <- constrOptim(c(3.1, 3.0), fr, grr, ui = ui, ci = ci)
+# hmmm, numerical issues?
+
+# ok, how about making a long narrow region around the line?
+# this takes a while...
+ui = rbind(c(1,-1), c(-1,1))
+ci = c(.099,-.101)
+# hmmm
+out1 <- constrOptim(c(3.1, 3.0), fr, grr, ui = ui, ci = ci)
+out2 <- constrOptim(c(3.1, 3.0), fr, NULL, ui = ui, ci = ci)
+
+image.plot(x1s, x2s, matrix(log(f), m))
+abline(-0.1, 1)
+points(out1$par[1], out1$par[2], pch = "1")
+points(out2$par[1], out2$par[2], pch = "2")
+
+
 
